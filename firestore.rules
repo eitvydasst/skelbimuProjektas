@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Visiems leidžiama skaityti "ads"
+    match /ads/{adId} {
+      allow read: if true;
+      allow create: if request.auth != null; // tik prisijungę
+      allow update, delete: if request.auth != null
+        && (request.auth.uid == resource.data.ownerId
+            || isAdmin(request.auth.uid));
+    }
+
+    // Komentarai
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow delete: if request.auth != null
+        && (request.auth.uid == resource.data.authorId
+            || isAdmin(request.auth.uid));
+    }
+
+    function isAdmin(uid) {
+      return get(/databases/{database}/documents/users/{uid}).data.role == 'admin';
+    }
+  }
+}

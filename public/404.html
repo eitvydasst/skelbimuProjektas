@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/styles/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skelbimai - 404</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/scripts/main.js"></script>
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main>
+        <section class="py-5 text-center container">
+            <div class="row py-lg-5">
+                <div class="col-lg-6 col-md-8 mx-auto">
+                    <h1 class="fw-light">404!</h1>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="mainFooter"></footer>
+      
+    <script>
+    async function loadAds() {
+        let query = db.collection('ads');
+        
+        // jei yra pasirinkta kategorija (pvz. categorySelect.value)
+        const selectedCategory = document.getElementById('categorySelect').value;
+        if (selectedCategory) {
+            query = query.where('categoryId', '==', selectedCategory);
+        }
+        
+        const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+        // Firestore neturi tobulos laisvos paieškos, tad variantai:
+        // - Filtruoti kliento pusėje, kai atsiųsime visus
+        // - Arba Firestore '==' atitiktis, bet partial match reikalauja kitų sprendimų.
+        
+        const snapshot = await query.get();
+        const adsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Paprastas kliento pusės filtras (jei norim partial match):
+        const filteredAds = adsData.filter(ad =>
+            ad.title.toLowerCase().includes(searchTerm) ||
+            ad.description.toLowerCase().includes(searchTerm)
+        );
+        
+        renderAds(filteredAds);
+        }
+        
+        function renderAds(adsArray) {
+        const container = document.getElementById('adsContainer');
+        container.innerHTML = '';
+        adsArray.forEach(ad => {
+            const card = document.createElement('div');
+            card.className = 'card mb-3';
+            card.innerHTML = `
+            <img src="${ad.imageUrl || ''}" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">${ad.title}</h5>
+                <p class="card-text">${ad.description}</p>
+                <p class="card-text"><strong>Kaina:</strong> ${ad.price || ''} €</p>
+                <a href="ad-details.html?id=${ad.id}" class="btn btn-primary">Žiūrėti detaliau</a>
+            </div>
+            `;
+            container.appendChild(card);
+        });
+        }
+        
+        // paleidžiam, kai užsikrauna puslapis
+        window.onload = () => {
+        loadAds();
+        
+        document.getElementById('searchInput').addEventListener('input', loadAds);
+        document.getElementById('categorySelect').addEventListener('change', loadAds);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/styles/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skelbimai - Admin zona</title>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/scripts/main.js"></script>
+</head>
+<body>
+  <header id="mainHeader"></header>
+  <script>
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          // nukreipiam, jei neprisijungęs:
+          window.location.href = 'login.html';
+          return;
+        }
+      
+        // patikrinam Firestore:
+        const userDoc = await db.collection('users').doc(user.uid).get();
+        if (!userDoc.exists || userDoc.data().role !== 'admin') {
+          alert('Neturite teisės pasiekti administracinės srities.');
+          window.location.href = 'index.html';
+          return;
+        }
+      
+        // Toliau čia jau administratoriaus funkcijos:
+        loadAllAds();
+        loadCategories();
+      });
+
+      async function addCategory() {
+  const name = document.getElementById('catName').value.trim();
+  if (!name) return;
+  await db.collection('categories').add({
+    name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  loadCategories();
+}
+
+async function deleteCategory(id) {
+  await db.collection('categories').doc(id).delete();
+  loadCategories();
+}
+
+async function loadAllAds() {
+  const snapshot = await db.collection('ads').get();
+  // rodom lentelėje
+}
+
+async function deleteAd(adId) {
+  await db.collection('ads').doc(adId).delete();
+  loadAllAds();
+}
+
+    </script>
+</body>
+</html>

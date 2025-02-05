@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/styles/main.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skelbimai - Pagrindinis</title>
+    <script src="./scripts/firebase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/scripts/main.js"></script>
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main>
+
+        <form class="py-5 text-center container" method="get">
+            <div class="row py-lg-5">
+                <div class="col-lg-6 col-md-8 mx-auto">
+                    <h1 class="fw-light">Skelbimai</h1>
+
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Ieškokite skelbimų" name="search" id="searchText"/>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary search-button">Paieška</button>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                      <select class="form-select form-control" name="categories" id="categoriesSelect" multiple>
+                      </select>
+                </div>
+            </div>
+        </section>
+
+        <div class="album py-5 bg-light">
+            <div class="container">
+              <div class="row row-cols-xs-1 row-cols-md-2 row-cols-lg-3 g-3" id="ads-container">
+              </div>
+            </div>
+            </div>
+          </div>        
+    </main>
+
+    <footer id="mainFooter"></footer>
+
+    <template id="ad-card-template">
+      <div class="col">
+        <div class="card shadow-sm">
+          <svg class="bd-placeholder-img card-img-top" width="100%" height="225" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="{{name}}" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <title>{{name}}</title>
+            <image xlink:href="{{image}}" x="0" y="0" height="100%" width="100%" preserveAspectRatio="xMidYMid slice"/>
+            <rect width="100%" height="100%" fill="#55595c50"/>
+            <text x="50%" y="50%" fill="#eceeef" dy=".3em" dominant-baseline="middle" text-anchor="middle">{{name}}</text>
+            <text x="50%" y="80%" fill="#eceeef" dy=".2em" dominant-baseline="middle" text-anchor="middle">{{category}}</text>
+          </svg>
+
+          <div class="card-body">
+            <p class="card-text">{{description}}</p>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="btn-group">
+                <a href="/ad-details/{{id}}" type="button" class="btn btn-sm btn-outline-secondary">Žiūrėti</a>
+                <button type="button" onclick="likeAd('{{id}}')" class="btn btn-sm btn-outline-secondary">Patinka</button>
+              </div>
+              <label class="ad-card-price">{{price}} EUR</label>
+              <small class="text-muted" id="{{id}}_likes">Patiktukai: {{likes}}</small>
+            </div>
+            <br/>
+            <div class="d-flex justify-content-between align-items-center admin-items-container">
+              <div class="btn-group w-100">
+                <button type="button" onclick="deleteAd('{{id}}')" class="btn btn-sm btn-danger">Trinti</button>
+                <a href="/edit-ad/{{id}}" type="button" class="btn btn-sm btn-outline-secondary">Redaguoti</a>
+              </div>
+            </div>
+          </div>
+        </div>
+    </template>
+
+    <script>
+
+      const deleteAd = (id) => {
+        if (!confirm('Ar tikrai?')) {
+          return;
+        }
+
+        fetch('/api/delete-ad', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id
+          })
+        })
+        .then(r => r.json())
+        .then((r) => {
+          if (!r.ok) {
+            alert(r.message);
+          } else {
+            loadAds();
+          }
+        })
+      };
+
+      const likeAd = (id) => {
+        fetch('/api/like', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id
+          })
+        }).then(r => r.json())
+        .then(r => {
+          if (r.ok) {
+            document.getElementById(`${id}_likes`).innerHTML = 'Patiktukai: ' + r.likes;
+          }
+        })
+      };
+
+      // class AdElement extends HTMLElement {
+      //   constructor() {
+      //     super();
+      //     const shadow = this.attachShadow({mode: 'open'})
+      //       .appendChild(templateContent.cloneNode(true))
+      //     ;
+
+      //     shadow.adoptedStyleSheets = [new CSSStyleSheet()];
+
+      //     console.log({a: this, adId: this.getAttribute('adId')});
+      //   }
+      // }
+
+      // customElements.define('ad-element', AdElement);
+
+      const renderAd = (ad) => {
+        const templateContent = document.getElementById('ad-card-template').innerHTML
+          .replaceAll('{{id}}', ad.id)
+          .replaceAll('{{category}}', ad.category)
+          .replaceAll('{{name}}', ad.name)
+          .replaceAll('{{description}}', ad.description)
+          .replaceAll('{{image}}', ad.pictureUrl)
+          .replaceAll('{{likes}}', ad.likes)
+          .replaceAll('{{price}}', ad.priceEur.toFixed(2))
+          ;
+
+          document.getElementById('ads-container').insertAdjacentHTML('beforeend', templateContent);
+      };
+
+      const loadAds = async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.get('search')) {
+          document.getElementById('searchText').value = urlParams.get('search');
+        }
+
+        const categories = urlParams.getAll('categories');
+
+        console.log({urlParams, search: urlParams.get('search'), categories});
+
+        const ads = await doSearch(urlParams.get('search'), urlParams.getAll('categories'));
+        console.log({ads});
+
+        document.getElementById('ads-container').innerHTML = '';
+        ads.forEach(ad => renderAd(ad));
+
+        if (window.siteConfig) {
+          document.getElementById('categoriesSelect').innerHTML = '';
+          window.siteConfig.categories.forEach(category => {
+            document.getElementById('categoriesSelect').insertAdjacentHTML('beforeend', `<option value="${category}" ${categories.includes(category) ? 'selected="selected"' : ''}>${category}</option>`);
+          });
+        }
+
+        if (!window.loggedInUser) {
+          Array.from(document.getElementsByClassName('admin-items-container')).forEach(element => {
+              element.remove();
+          });
+        }
+      };
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadAds();
+      });
+    </script>
+</body>
+</html>
