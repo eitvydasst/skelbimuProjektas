@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 const app = Admin.initializeApp({
-    credential: Admin.credential.cert('./skelbimuprojektas-firebase-adminsdk-fbsvc-37df213881.json'),
+    credential: Admin.credential.cert('./privateKey.json'),
     databaseURL: 'skelbimuprojektas.firebaseapp.com',
 });
 

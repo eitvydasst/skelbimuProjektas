@@ -6,6 +6,7 @@ Paleisti programą reikalinga:
 
 Projekto paleidimas
 - npm install
+- Įkelti "privateKey.json" failą į pagrindinę direktoriją
 - npm run server
 
 Pagal numatytąjį nustatymą, serveris veiks http://localhost:3000
