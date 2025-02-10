@@ -18,7 +18,7 @@ const firebaseConfig = {
 };
 
 const app = Admin.initializeApp({
-    credential: Admin.credential.cert('./skelbimuprojektas-firebase-adminsdk-fbsvc-2ee80aa1ab.json'),
+    credential: Admin.credential.cert('./skelbimuprojektas-firebase-adminsdk-fbsvc-37df213881.json'),
     databaseURL: 'skelbimuprojektas.firebaseapp.com',
 });
 
@@ -46,7 +46,11 @@ const login = async (email, password) => {
         throw new Error('Trūksta el pašto arba slaptažodžio!');
     }
 
-    const user = await app.auth().getUserByEmail(email).catch(e => null);
+    const user = await app.auth().getUserByEmail(email).catch(e => {
+        console.error(e);
+
+        return null;
+    });
     if (!user) {
         throw new Error('Toks vartotojas neegzistuoja');
     }
