@@ -14,7 +14,7 @@ fetch('/api/header')
         .then(user => {
             window.loggedInUser = user;
             if (user) {
-                document.getElementById('loginTools').innerHTML = `<label class="text-white">${user.displayName}</label><br/><a href="/new-ad" class="text-white">Naujas skelbimas</a><br/><button onclick="logout()" class="btn btn-danger">Atsijungti</button>`;
+                document.getElementById('loginTools').innerHTML = `<label class="text-white">${user.email}</label><br/><a href="/new-ad" class="text-white">Naujas skelbimas</a><br/><button onclick="logout()" class="btn btn-danger">Atsijungti</button>`;
             } else {
                 Array.from(document.getElementsByClassName('admin-items-container')).forEach(element => {
                     element.remove();
